@@ -32,4 +32,4 @@ async function runBot(gameId, name) {
 }
 
 // For this test, we just run one bot
-runBot("937657", "CloudTester_1");
+runBot("198261", "CloudTester_1");
