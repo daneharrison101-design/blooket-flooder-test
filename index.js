@@ -49,4 +49,4 @@ async function runBot(gameId, name) {
     }
 }
 
-runBot("198261", "StealthTester_1");
+runBot("996247", "StealthTester_1");
