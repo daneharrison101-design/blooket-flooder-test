@@ -16,7 +16,7 @@ async function runBot(gameId, name) {
         await page.type('input', gameId);
         await page.keyboard.press('Enter');
 
-        await page.waitForTimeout(2000); // Wait for name screen
+        await new Promise(r => setTimeout(r, 2000)); // Wait for name screen
         await page.type('input', name);
         await page.keyboard.press('Enter');
 
