@@ -1,0 +1,21 @@
+name: Blooket Flood
+on: workflow_dispatch
+jobs:
+  flood:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install Dependencies
+        run: |
+          npm install puppeteer-extra puppeteer-extra-plugin-stealth puppeteer
+          npx puppeteer browsers install chrome
+      - name: Run Bot
+        run: node index.js
+        env:
+          GAME_ID: "309144" # PUT YOUR GAME ID HERE
+          BOT_COUNT: "15"
+          BOT_NAME: "aye"
