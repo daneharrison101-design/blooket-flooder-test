@@ -1,21 +1,39 @@
-name: Blooket Flood
-on: workflow_dispatch
+name: Blooket Titan Flood
+on:
+  workflow_dispatch:
+    inputs:
+      game_id:
+        description: 'Blooket Game ID'
+        required: true
+        default: '000000'
+      bot_count:
+        description: 'How many bots?'
+        required: true
+        default: '20'
+      bot_name:
+        description: 'Bot Name Prefix'
+        required: true
+        default: 'aye'
+
 jobs:
   flood:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install Node
+      
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Install Dependencies
+          
+      - name: Install Tools
         run: |
           npm install puppeteer-extra puppeteer-extra-plugin-stealth puppeteer
           npx puppeteer browsers install chrome
-      - name: Run Bot
+          
+      - name: Launch Attack
         run: node index.js
         env:
-          GAME_ID: "309144" # PUT YOUR GAME ID HERE
-          BOT_COUNT: "15"
-          BOT_NAME: "aye"
+          GAME_ID: ${{ github.event.inputs.game_id }}
+          BOT_COUNT: ${{ github.event.inputs.bot_count }}
+          BOT_NAME: ${{ github.event.inputs.bot_name }}
