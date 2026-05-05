@@ -1,0 +1,11 @@
+{
+  "name": "blooket-test-engine",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "puppeteer": "^22.0.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
