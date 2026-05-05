@@ -23,7 +23,7 @@ async function runBot(gameId, name) {
         await page.keyboard.press('Enter');
 
         console.log(`[+] ${name} joined!`);
-        await new Promise(r => setTimeout(r, 60000)); 
+        await new Promise(r => setTimeout(r, 600000)); 
     } catch (e) {
         console.log(`[!] ${name} failed: ${e.message}`);
     } finally {
