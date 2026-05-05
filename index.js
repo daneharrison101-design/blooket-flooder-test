@@ -2,54 +2,73 @@ const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
 
-const userAgents = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-];
-
-async function runBot(gameId, name, index) {
+async function runBot(gameId, name) {
     const browser = await puppeteer.launch({
         headless: "new",
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--single-process']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+            '--single-process' // Crucial for speed on small servers
+        ]
     });
-    const page = await browser.newPage();
-    
-    // Pick a random identity for this bot
-    await page.setUserAgent(userAgents[index % userAgents.length]);
 
     try {
-        await page.goto('https://play.blooket.com/play', { waitUntil: 'networkidle2' });
+        const page = await browser.newPage();
+        
+        // Speed Hack 1: Block all images, css, and fonts
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+
+        // Speed Hack 2: Lower the timeout and wait for nothing
+        await page.goto('https://play.blooket.com/play', { waitUntil: 'domcontentloaded' });
 
         await page.waitForSelector('input');
-        // Random typing speed (between 100ms and 300ms)
-        await page.type('input', gameId, { delay: Math.floor(Math.random() * 200) + 100 });
+        // Type instantly (0 delay)
+        await page.type('input', gameId);
         await page.keyboard.press('Enter');
 
-        await new Promise(r => setTimeout(r, 6000)); 
+        // Shortest possible wait for name screen
+        await new Promise(r => setTimeout(r, 2500)); 
 
         await page.waitForSelector('input');
-        await page.type('input', name, { delay: Math.floor(Math.random() * 200) + 100 });
+        await page.type('input', name);
         await page.keyboard.press('Enter');
 
-        console.log(`[+] ${name} reported joined.`);
+        console.log(`[🚀] ${name} BLASTED in.`);
+        
+        // Keep open for 15 mins
         await new Promise(r => setTimeout(r, 900000)); 
     } catch (e) {
-        console.log(`[!] ${name} error.`);
+        // Silently fail to keep the logs clean
     }
 }
 
 const GAME_ID = process.env.GAME_ID || "000000";
-const BOT_COUNT = parseInt(process.env.BOT_COUNT) || 1;
+const BOT_COUNT = parseInt(process.env.BOT_COUNT) || 5;
 const BASE_NAME = process.env.BOT_NAME || "oli";
 
 async function start() {
+    console.log(`[System] Initializing High-Speed Launch for ${BOT_COUNT} bots...`);
+    
+    // Speed Hack 3: Launch ALL bots at once with a tiny staggered delay
     for (let i = 1; i <= BOT_COUNT; i++) {
-        runBot(GAME_ID, `${BASE_NAME}_${i}`, i);
-        // Wait a random time between 5 and 18 seconds
-        const waitTime = Math.floor(Math.random() * 15000) + 30000;
-        console.log(`[System] Bot ${i} deployed. Waiting ${waitTime/1000}s...`);
-        await new Promise(r => setTimeout(r, waitTime)); 
+        const uniqueName = `${BASE_NAME}${Math.floor(Math.random() * 9999)}`;
+        runBot(GAME_ID, uniqueName);
+        
+        // Only wait 1 second between starts instead of 60
+        await new Promise(r => setTimeout(r, 1000)); 
     }
 }
+
 start();
