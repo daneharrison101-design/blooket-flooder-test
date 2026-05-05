@@ -46,8 +46,8 @@ const BASE_NAME = process.env.BOT_NAME || "oli";
 async function start() {
     for (let i = 1; i <= BOT_COUNT; i++) {
         runBot(GAME_ID, `${BASE_NAME}_${i}`, i);
-        // Wait a random time between 15 and 25 seconds
-        const waitTime = Math.floor(Math.random() * 10000) + 15000;
+        // Wait a random time between 30 and 45 seconds
+        const waitTime = Math.floor(Math.random() * 15000) + 30000;
         console.log(`[System] Bot ${i} deployed. Waiting ${waitTime/1000}s...`);
         await new Promise(r => setTimeout(r, waitTime)); 
     }
