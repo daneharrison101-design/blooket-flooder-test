@@ -9,65 +9,68 @@ async function runBot(gameId, name) {
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
             '--disable-gpu',
-            '--single-process' // Crucial for speed on small servers
+            '--no-zygote',
+            '--single-process' 
         ]
     });
 
     try {
         const page = await browser.newPage();
         
-        // Speed Hack 1: Block all images, css, and fonts
+        // Block only the heaviest items to save RAM and speed up loading
         await page.setRequestInterception(true);
         page.on('request', (req) => {
-            if (['image', 'stylesheet', 'font', 'media'].includes(req.resourceType())) {
+            if (['image', 'media', 'font'].includes(req.resourceType())) {
                 req.abort();
             } else {
                 req.continue();
             }
         });
 
-        // Speed Hack 2: Lower the timeout and wait for nothing
+        // Use 'domcontentloaded' to start typing before the music/heavy scripts load
         await page.goto('https://play.blooket.com/play', { waitUntil: 'domcontentloaded' });
 
+        // Enter Game ID
         await page.waitForSelector('input');
-        // Type instantly (0 delay)
-        await page.type('input', gameId);
+        await page.type('input', gameId, { delay: 50 });
         await page.keyboard.press('Enter');
 
-        // Shortest possible wait for name screen
-        await new Promise(r => setTimeout(r, 2500)); 
+        // Human-like pause to let the name input appear
+        await new Promise(r => setTimeout(r, 4000)); 
 
+        // Enter Random Name
         await page.waitForSelector('input');
-        await page.type('input', name);
+        await page.type('input', name, { delay: 50 });
         await page.keyboard.press('Enter');
 
-        console.log(`[🚀] ${name} BLASTED in.`);
+        console.log(`[🚀] ${name} joined successfully!`);
         
-        // Keep open for 15 mins
+        // Keep the bot alive in the lobby for 15 minutes
         await new Promise(r => setTimeout(r, 900000)); 
     } catch (e) {
-        // Silently fail to keep the logs clean
+        console.log(`[!] ${name} Error: ${e.message}`);
+    } finally {
+        await browser.close();
     }
 }
 
+// Variables pulled from Railway Dashboard
 const GAME_ID = process.env.GAME_ID || "000000";
-const BOT_COUNT = parseInt(process.env.BOT_COUNT) || 5;
-const BASE_NAME = process.env.BOT_NAME || "oli";
+const BOT_COUNT = parseInt(process.env.BOT_COUNT) || 1;
+const BASE_NAME = process.env.BOT_NAME || "Student";
 
 async function start() {
-    console.log(`[System] Initializing High-Speed Launch for ${BOT_COUNT} bots...`);
-    
-    // Speed Hack 3: Launch ALL bots at once with a tiny staggered delay
+    console.log(`[System] Initializing Flood for Game: ${GAME_ID}`);
     for (let i = 1; i <= BOT_COUNT; i++) {
+        // Generates names like Student842, Student109, etc.
         const uniqueName = `${BASE_NAME}${Math.floor(Math.random() * 9999)}`;
+        
         runBot(GAME_ID, uniqueName);
         
-        // Only wait 1 second between starts instead of 60
-        await new Promise(r => setTimeout(r, 1000)); 
+        // 5-second gap: The "Sweet Spot" to avoid Blooket's IP-based shadow ban
+        console.log(`[System] Bot ${i} deploying...`);
+        await new Promise(r => setTimeout(r, 5000)); 
     }
 }
 
